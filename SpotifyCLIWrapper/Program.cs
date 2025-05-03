@@ -31,13 +31,21 @@ namespace MyApp
             
             AnsiConsole.MarkupLine("[green]Starting Spotify CLI...[/]");
 
-            if (string.IsNullOrEmpty(accessToken))
+            (accessToken, refreshToken) = TokenStore.Load();
+
+            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
             {
                 await Authorize();
+                TokenStore.Save(accessToken, refreshToken);
             }
 
             // Pull the currently playing song
-            var client = new SpotifyClient(accessToken);
+            SpotifyClient client = new SpotifyClient(accessToken, async () =>
+            {
+                accessToken = await RefreshAccessToken();
+                return accessToken;
+            });
+
             var nowPlaying = await client.GetCurrentlyPlayingRawJsonAsync();
             var nowPlayingJson = JsonDocument.Parse(nowPlaying);
             var nowPlayingSong = nowPlayingJson.RootElement.GetProperty("item").GetProperty("name").GetString();
@@ -92,6 +100,41 @@ namespace MyApp
             var doc = JsonDocument.Parse(json);
             accessToken = doc.RootElement.GetProperty("access_token").GetString();
             refreshToken = doc.RootElement.GetProperty("refresh_token").GetString();
+        }
+
+        private static async Task<string> RefreshAccessToken()
+        {
+            using var client = new HttpClient();
+            var auth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", auth);
+
+            var content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+            });
+
+            var response = await client.PostAsync(tokenEndpoint, content);
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to refresh token: {json}[/]");
+                throw new Exception("Token refresh failed.");
+            }
+            AnsiConsole.MarkupLine($"[green]Token refreshed successfully.[/]");
+
+            var doc = JsonDocument.Parse(json);
+            var newAccessToken = doc.RootElement.GetProperty("access_token").GetString();
+
+            if (doc.RootElement.TryGetProperty("refresh_token", out var newRefreshTokenProp))
+            {
+                refreshToken = newRefreshTokenProp.GetString();
+                TokenStore.Save(accessToken, refreshToken);
+
+            }
+            accessToken = newAccessToken;
+            return newAccessToken;
         }
     }
 }
