@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using DotNetEnv;
+using Microsoft.VisualBasic;
 
 namespace MyApp
 {
@@ -34,6 +35,14 @@ namespace MyApp
             {
                 await Authorize();
             }
+
+            // Pull the currently playing song
+            var client = new SpotifyClient(accessToken);
+            var nowPlaying = await client.GetCurrentlyPlayingRawJsonAsync();
+            var nowPlayingJson = JsonDocument.Parse(nowPlaying);
+            var nowPlayingSong = nowPlayingJson.RootElement.GetProperty("item").GetProperty("name").GetString();
+            var nowPlayingArtist = nowPlayingJson.RootElement.GetProperty("item").GetProperty("artists")[0].GetProperty("name").GetString();
+            AnsiConsole.MarkupLine($"Now Playing: [green]{nowPlayingSong}[/] by [yellow]{nowPlayingArtist}[/]");
         }
 
         private static async Task Authorize()
