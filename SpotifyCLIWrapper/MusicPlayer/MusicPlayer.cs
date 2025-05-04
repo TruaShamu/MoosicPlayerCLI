@@ -9,7 +9,8 @@ public class MusicPlayer : IMusicPlayer
     public TimeSpan CurrentPosition => _audioPlayer.CurrentPosition;
     public TimeSpan TotalDuration => _audioPlayer.TotalDuration;
     public bool IsPlaying => _audioPlayer.IsPlaying;
-    public bool IsLoopingCurrentTrack => _audioPlayer.IsPlaying && CurrentTrack != null;
+    private bool _isLoopingCurrentTrack;
+    public bool IsLoopingCurrentTrack => _isLoopingCurrentTrack;
 
     public MusicPlayer(
         IAudioFileScanner audioFileScanner,
@@ -84,17 +85,19 @@ public class MusicPlayer : IMusicPlayer
         _audioPlayer.Dispose();
     }
 
-    // @TODO: Finish this stub so we can loop the current track
     public void LoopCurrentTrack()
     {
-        if (CurrentTrack != null)
-        {
-            PlayCurrentTrack();
-        }
+        _isLoopingCurrentTrack = !_isLoopingCurrentTrack;
     }
 
     private void AudioPlayer_TrackFinished(object? sender, TrackFinishedEventArgs e)
     {
-        NextTrack();
+        if (_isLoopingCurrentTrack)
+        {
+            PlayCurrentTrack();
+        } else
+        {
+            NextTrack();
+        }
     }
 }

@@ -42,8 +42,8 @@
             Console.WriteLine("  >: Next track");
             Console.WriteLine("  <: Previous track");
             Console.WriteLine("  V: View playlist");
+            Console.WriteLine("  R: Toggle loop mode");
             Console.WriteLine("  Q: Quit");
-            Console.WriteLine("  .: Loop current track");
             Console.Write("\nEnter command: ");
         }
 
@@ -65,6 +65,10 @@
                     break;
                 case 'V':
                     DisplayPlaylist(player);
+                    break;
+                case 'R':
+                    player.LoopCurrentTrack();
+                    Console.WriteLine($"Loop mode: {(player.IsLoopingCurrentTrack ? "ON" : "OFF")}");
                     break;
                 case 'Q':
                     _isRunning = false;
