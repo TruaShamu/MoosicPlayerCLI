@@ -9,4 +9,5 @@ public interface IAudioPlayer : IDisposable
     void Pause();
     void Resume();
     void Stop();
+    event EventHandler<TrackFinishedEventArgs> TrackFinished;
 }

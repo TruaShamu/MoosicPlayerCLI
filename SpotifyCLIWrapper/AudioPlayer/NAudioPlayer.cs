@@ -6,7 +6,9 @@ public class NAudioPlayer : IAudioPlayer
     private AudioFileReader? _audioFileReader;
     private string? _currentFilePath; // File path of the currently playing audio file
     private bool _isPaused;
+    private bool _isManuallyStopped; // Flag to indicate if the player was manually stopped
 
+    public event EventHandler<TrackFinishedEventArgs> TrackFinished;
     public TimeSpan CurrentPosition => _audioFileReader?.CurrentTime ?? TimeSpan.Zero;
     public TimeSpan TotalDuration => _audioFileReader?.TotalTime ?? TimeSpan.Zero;
     public bool IsPlaying => _waveOutDevice != null && _waveOutDevice.PlaybackState == PlaybackState.Playing;
@@ -31,12 +33,16 @@ public class NAudioPlayer : IAudioPlayer
 
         Stop(); // Stop any existing playback and dispose of resources
 
+        Console.WriteLine("Starting playback of: " + filePath);
+
         // Initialize new playback
         _currentFilePath = filePath;
         _audioFileReader = new AudioFileReader(filePath);
         _waveOutDevice = new WaveOutEvent();
         _waveOutDevice.Init(_audioFileReader);
         _waveOutDevice.Play();
+        _isManuallyStopped = false; // Reset the flag
+        _waveOutDevice.PlaybackStopped += WaveOutDevice_PlaybackStopped;
         _isPaused = false;
     }
 
@@ -69,8 +75,13 @@ public class NAudioPlayer : IAudioPlayer
     /// </summary>
     public void Stop()
     {
+        _isManuallyStopped = true;
         try
         {
+            if (_waveOutDevice != null)
+            {
+                _waveOutDevice.PlaybackStopped -= WaveOutDevice_PlaybackStopped;
+            }
             _waveOutDevice?.Stop();
             _waveOutDevice?.Dispose();
             _audioFileReader?.Dispose();
@@ -86,6 +97,19 @@ public class NAudioPlayer : IAudioPlayer
         _audioFileReader = null;
         _currentFilePath = null;
         _isPaused = false;
+    }
+
+    private void WaveOutDevice_PlaybackStopped(object? sender, StoppedEventArgs e)
+    {
+        if (!_isManuallyStopped && _currentFilePath != null)
+        {
+            // If it wasn't manually stopped, then it reached the end naturally
+            string finishedFilePath = _currentFilePath;
+            Task.Run(() => TrackFinished?.Invoke(this, new TrackFinishedEventArgs(finishedFilePath)));
+        }
+        
+        // Reset for next time
+        _isManuallyStopped = false;
     }
 
     public void Dispose()

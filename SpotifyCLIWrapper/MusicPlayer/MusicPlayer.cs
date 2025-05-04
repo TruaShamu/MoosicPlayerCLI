@@ -19,6 +19,7 @@ public class MusicPlayer : IMusicPlayer
         _audioFileScanner = audioFileScanner ?? throw new ArgumentNullException(nameof(audioFileScanner));
         _audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
         _playlist = playlist ?? throw new ArgumentNullException(nameof(playlist));
+        _audioPlayer.TrackFinished += AudioPlayer_TrackFinished;
     }
 
     public Task LoadPlaylistFromDirectoryAsync(string directoryPath)
@@ -79,6 +80,7 @@ public class MusicPlayer : IMusicPlayer
 
     public void Dispose()
     {
+        _audioPlayer.TrackFinished -= AudioPlayer_TrackFinished;
         _audioPlayer.Dispose();
     }
 
@@ -89,5 +91,10 @@ public class MusicPlayer : IMusicPlayer
         {
             PlayCurrentTrack();
         }
+    }
+
+    private void AudioPlayer_TrackFinished(object? sender, TrackFinishedEventArgs e)
+    {
+        NextTrack();
     }
 }
