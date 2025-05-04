@@ -11,6 +11,8 @@ public class MusicPlayer : IMusicPlayer
     public bool IsPlaying => _audioPlayer.IsPlaying;
     private bool _isLoopingCurrentTrack;
     public bool IsLoopingCurrentTrack => _isLoopingCurrentTrack;
+    private bool _isShuffling;
+    public bool IsShuffling => _isShuffling;
 
     public MusicPlayer(
         IAudioFileScanner audioFileScanner,
@@ -99,5 +101,13 @@ public class MusicPlayer : IMusicPlayer
         {
             NextTrack();
         }
+    }
+
+    /// <summary>
+    ///  Shuffling stub
+    /// </summary>
+    public void ShufflePlaylist()
+    {
+        _isShuffling = !_isShuffling;
     }
 }

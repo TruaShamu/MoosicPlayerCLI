@@ -44,6 +44,7 @@
             Console.WriteLine("  V: View playlist");
             Console.WriteLine("  R: Toggle loop mode");
             Console.WriteLine("  Q: Quit");
+            Console.WriteLine("  S: Toggle shuffle mode");
             Console.Write("\nEnter command: ");
         }
 
@@ -75,6 +76,9 @@
                     break;
                 case '.':
                     player.LoopCurrentTrack();
+                    break;
+                case 'S':
+                    player.ShufflePlaylist();
                     break;
             }
         }
@@ -141,11 +145,16 @@
                     string status = player.IsPlaying ? "► Playing" : "❚❚ Paused";
                     string trackInfo = $"{player.CurrentTrack.FileName}";
                     string timeInfo = $"{player.CurrentPosition:mm\\:ss} / {player.TotalDuration:mm\\:ss}";
-
+                    
                     // Display whether the track is looping
                     if (player.IsLoopingCurrentTrack)
                     {
                         status += " (Looping)";
+                    }
+
+                    if (player.IsShuffling)
+                    {
+                        status += " (Shuffling)";
                     }
                     
                     Console.Write($"{status} | {trackInfo} | {timeInfo}");

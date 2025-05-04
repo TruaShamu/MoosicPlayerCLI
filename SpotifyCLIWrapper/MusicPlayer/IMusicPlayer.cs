@@ -6,10 +6,12 @@ public interface IMusicPlayer : IDisposable
     TimeSpan TotalDuration { get; }
     bool IsPlaying { get; }
     bool IsLoopingCurrentTrack { get; }
+    bool IsShuffling { get; }
     Task LoadPlaylistFromDirectoryAsync(string directoryPath);
     void PlayCurrentTrack();
     void TogglePlayPause();
     void NextTrack();
     void PreviousTrack();
     void LoopCurrentTrack();
+    void ShufflePlaylist();
 }
