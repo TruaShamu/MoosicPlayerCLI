@@ -7,6 +7,7 @@ public interface IMusicPlayer : IDisposable
     bool IsPlaying { get; }
     bool IsLoopingCurrentTrack { get; }
     bool IsShuffling { get; }
+    Subtitle CurrentSubtitle { get; }
     Task LoadPlaylistFromDirectoryAsync(string directoryPath);
     void PlayCurrentTrack();
     void TogglePlayPause();

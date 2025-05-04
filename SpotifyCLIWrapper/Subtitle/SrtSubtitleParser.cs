@@ -3,13 +3,19 @@ using System.Text.RegularExpressions;
 
 public class SrtSubtitleParser : ISubtitleParser
 {
+    private readonly IFileSystem _fileSystem;
+
     private static readonly Regex TimestampRegex = new Regex(
         @"(?<start>\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(?<end>\d{2}:\d{2}:\d{2},\d{3})",
         RegexOptions.Compiled);
+    public SrtSubtitleParser(IFileSystem fileSystem)
+    {
+        _fileSystem = fileSystem;
+    }
 
     public SubtitleTrack Parse(string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
+        var lines = _fileSystem.ReadAllText(filePath).Split('\n');
         var track = new SubtitleTrack(filePath);
 
         int i = 0;

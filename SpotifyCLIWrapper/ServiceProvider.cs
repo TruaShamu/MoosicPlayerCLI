@@ -8,7 +8,10 @@ public class ServiceProvider
         {
             // Register services
             _services[typeof(IFileSystem)] = new FileSystem();
-            _services[typeof(IAudioFileScanner)] = new AudioFileScanner(GetService<IFileSystem>());
+            _services[typeof(ISubtitleParser)] = new SrtSubtitleParser(GetService<IFileSystem>());
+            _services[typeof(IAudioFileScanner)] = new AudioFileScanner(
+                GetService<IFileSystem>(), 
+                GetService<ISubtitleParser>());
             _services[typeof(IAudioPlayer)] = new NAudioPlayer();
             _services[typeof(IPlaylist)] = new Playlist();
             _services[typeof(IMusicPlayer)] = new MusicPlayer(

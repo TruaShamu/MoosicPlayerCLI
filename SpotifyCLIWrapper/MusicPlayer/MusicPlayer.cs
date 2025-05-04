@@ -13,6 +13,11 @@ public class MusicPlayer : IMusicPlayer
     public bool IsLoopingCurrentTrack => _isLoopingCurrentTrack;
     public bool IsShuffling => _playlist.IsShuffling;
 
+    public Subtitle CurrentSubtitle => _currentSubtitle;
+
+    private Timer _subtitleTimer;
+    private Subtitle? _currentSubtitle;
+
     public MusicPlayer(
         IAudioFileScanner audioFileScanner,
         IAudioPlayer audioPlayer,
@@ -46,6 +51,16 @@ public class MusicPlayer : IMusicPlayer
         if (CurrentTrack != null)
         {
             _audioPlayer.Play(CurrentTrack.FilePath);
+            
+            if (CurrentTrack.HasSubtitles)
+            {
+                StartSubtitleTracking();
+            }
+            else
+            {
+                StopSubtitleTracking();
+                _currentSubtitle = null;
+            }
         }
     }
 
@@ -103,10 +118,43 @@ public class MusicPlayer : IMusicPlayer
     }
 
     /// <summary>
-    ///  Shuffling stub
     /// </summary>
     public void ShufflePlaylist()
     {
         _playlist.ToggleShuffle();
+    }
+
+    private void StartSubtitleTracking()
+    {
+        StopSubtitleTracking();
+        
+        _subtitleTimer = new Timer(UpdateCurrentSubtitle, null, 0, 100);
+    }
+
+    private void StopSubtitleTracking()
+    {
+        if (_subtitleTimer != null)
+        {
+            _subtitleTimer.Dispose();
+            _subtitleTimer = null;
+        }
+    }
+
+    private void UpdateCurrentSubtitle(object state)
+    {
+        if (CurrentTrack?.HasSubtitles == true && IsPlaying)
+        {
+            // Get current position
+            TimeSpan position = CurrentPosition;
+            
+            // Find the subtitle that should be active at this position
+            Subtitle subtitle = CurrentTrack.Subtitles.GetActiveSubtitleAt(position);
+            
+            // Only update if there's a change (to avoid unnecessary UI updates)
+            if (_currentSubtitle != subtitle)
+            {
+                _currentSubtitle = subtitle;
+            }
+        }
     }
 }
