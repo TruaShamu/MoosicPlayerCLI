@@ -10,3 +10,4 @@ obj/
 *.env
 *.json
 *.mp3
+*.srt
