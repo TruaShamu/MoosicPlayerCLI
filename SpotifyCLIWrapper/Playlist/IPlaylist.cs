@@ -8,4 +8,6 @@ public interface IPlaylist
     bool MoveNext();
     bool MovePrevious();
     void Reset();
+    bool IsShuffling { get; }
+    void ToggleShuffle();
 }
