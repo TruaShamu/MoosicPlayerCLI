@@ -12,7 +12,7 @@ public class MusicPlayer : IMusicPlayer
     private bool _isLoopingCurrentTrack;
     public bool IsLoopingCurrentTrack => _isLoopingCurrentTrack;
     public bool IsShuffling => _playlist.IsShuffling;
-
+    public float Volume => _audioPlayer.Volume;
     public Subtitle CurrentSubtitle => _currentSubtitle;
 
     private Timer _subtitleTimer;
@@ -156,5 +156,19 @@ public class MusicPlayer : IMusicPlayer
                 _currentSubtitle = subtitle;
             }
         }
+    }
+    public void SetVolume(float volume)
+    {
+        _audioPlayer.SetVolume(volume);
+    }
+    
+    public void IncreaseVolume()
+    {
+        _audioPlayer.IncreaseVolume();
+    }
+    
+    public void DecreaseVolume()
+    {
+        _audioPlayer.DecreaseVolume();
     }
 }

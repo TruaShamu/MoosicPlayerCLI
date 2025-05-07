@@ -9,5 +9,8 @@ public interface IAudioPlayer : IDisposable
     void Pause();
     void Resume();
     void Stop();
+    void SetVolume(float volume);
+    void IncreaseVolume(float step = 0.1f);
+    void DecreaseVolume(float step = 0.1f);
     event EventHandler<TrackFinishedEventArgs> TrackFinished;
 }

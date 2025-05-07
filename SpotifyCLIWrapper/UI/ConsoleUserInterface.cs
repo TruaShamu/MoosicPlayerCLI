@@ -50,35 +50,41 @@ public class ConsoleUserInterface : IUserInterface
 
     private async Task HandleKeyPressAsync(ConsoleKeyInfo key, IMusicPlayer player)
     {
-        switch (char.ToUpper(key.KeyChar))
+        switch (key.Key)
         {
-            case 'L':
+            case ConsoleKey.L:
                 await LoadDirectoryAsync(player);
                 break;
-            case 'P':
+            case ConsoleKey.P:
                 player.TogglePlayPause();
                 break;
-            case '>':
-                player.NextTrack();
+            case ConsoleKey.OemPeriod:
+                player.LoopCurrentTrack();
                 break;
-            case '<':
+            case ConsoleKey.LeftArrow:
                 player.PreviousTrack();
                 break;
-            case 'V':
+            case ConsoleKey.RightArrow:
+                player.NextTrack();
+                break;
+            case ConsoleKey.V:
                 DisplayPlaylist(player);
                 break;
-            case 'R':
+            case ConsoleKey.R:
                 player.LoopCurrentTrack();
                 Console.WriteLine($"Loop mode: {(player.IsLoopingCurrentTrack ? "ON" : "OFF")}");
                 break;
-            case 'Q':
+            case ConsoleKey.Q:
                 _isRunning = false;
                 break;
-            case '.':
-                player.LoopCurrentTrack();
-                break;
-            case 'S':
+            case ConsoleKey.S:
                 player.ShufflePlaylist();
+                break;
+            case ConsoleKey.UpArrow:
+                player.IncreaseVolume();
+                break;
+            case ConsoleKey.DownArrow:
+                player.DecreaseVolume();
                 break;
         }
     }
@@ -147,7 +153,8 @@ public class ConsoleUserInterface : IUserInterface
                 string trackInfo = $"{player.CurrentTrack.FileName}";
                 string timeInfo = $"{player.CurrentPosition:mm\\:ss} / {player.TotalDuration:mm\\:ss}";
                 string subtitleInfo = player.CurrentTrack.HasSubtitles ? "[CC]" : "";
-                
+                string volumeInfo = $"Volume: {player.Volume * 100}%";
+
                 // Display whether the track is looping
                 if (player.IsLoopingCurrentTrack)
                 {
@@ -159,7 +166,7 @@ public class ConsoleUserInterface : IUserInterface
                     status += " (Shuffling)";
                 }
 
-                Console.Write($"{status} | {trackInfo} {subtitleInfo} | {timeInfo}");
+                Console.Write($"{status} | {trackInfo} {subtitleInfo} | {timeInfo} | {volumeInfo}");
                 
                 if (player.CurrentTrack.HasSubtitles)
                 {

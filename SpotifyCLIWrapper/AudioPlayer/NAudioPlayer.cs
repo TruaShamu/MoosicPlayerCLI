@@ -7,12 +7,12 @@ public class NAudioPlayer : IAudioPlayer
     private string? _currentFilePath; // File path of the currently playing audio file
     private bool _isPaused;
     private bool _isManuallyStopped; // Flag to indicate if the player was manually stopped
-
     public event EventHandler<TrackFinishedEventArgs> TrackFinished;
     public TimeSpan CurrentPosition => _audioFileReader?.CurrentTime ?? TimeSpan.Zero;
     public TimeSpan TotalDuration => _audioFileReader?.TotalTime ?? TimeSpan.Zero;
     public bool IsPlaying => _waveOutDevice != null && _waveOutDevice.PlaybackState == PlaybackState.Playing;
-    public float Volume => _waveOutDevice?.Volume ?? 1.0f;
+    private float _volume = 1.0f;
+    public float Volume => _volume;
 
     /// <summary>
     /// Starts playback of the specified audio file.
@@ -40,8 +40,9 @@ public class NAudioPlayer : IAudioPlayer
         _audioFileReader = new AudioFileReader(filePath);
         _waveOutDevice = new WaveOutEvent();
         _waveOutDevice.Init(_audioFileReader);
+        _waveOutDevice.Volume = _volume;
         _waveOutDevice.Play();
-        _isManuallyStopped = false; // Reset the flag
+        _isManuallyStopped = false;
         _waveOutDevice.PlaybackStopped += WaveOutDevice_PlaybackStopped;
         _isPaused = false;
     }
@@ -110,6 +111,25 @@ public class NAudioPlayer : IAudioPlayer
         
         // Reset for next time
         _isManuallyStopped = false;
+    }
+
+    public void SetVolume(float volume)
+    {
+        _volume = Math.Clamp(volume, 0f, 1f);
+        if (_waveOutDevice != null)
+        {
+            _waveOutDevice.Volume = volume;
+        }
+    }
+
+    public void IncreaseVolume(float step = 0.1f)
+    {
+        SetVolume(_volume + step);
+    }
+    
+    public void DecreaseVolume(float step = 0.1f)
+    {
+        SetVolume(_volume - step);
     }
 
     public void Dispose()

@@ -7,6 +7,7 @@ public interface IMusicPlayer : IDisposable
     bool IsPlaying { get; }
     bool IsLoopingCurrentTrack { get; }
     bool IsShuffling { get; }
+    float Volume { get; }
     Subtitle CurrentSubtitle { get; }
     Task LoadPlaylistFromDirectoryAsync(string directoryPath);
     void PlayCurrentTrack();
@@ -15,4 +16,7 @@ public interface IMusicPlayer : IDisposable
     void PreviousTrack();
     void LoopCurrentTrack();
     void ShufflePlaylist();
+    void SetVolume(float volume);
+    void IncreaseVolume();
+    void DecreaseVolume();
 }
