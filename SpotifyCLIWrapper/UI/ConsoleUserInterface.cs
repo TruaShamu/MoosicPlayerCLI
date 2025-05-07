@@ -222,7 +222,11 @@ public class ConsoleUserInterface : IUserInterface
                 Console.SetCursorPosition(originalLeft, originalTop);
             }
 
-            await Task.Delay(updateIntervalMs, cancellationToken);
+            try {
+                await Task.Delay(updateIntervalMs, cancellationToken);
+            } catch (TaskCanceledException) {
+                break;
+            }
         }
     }
 }
