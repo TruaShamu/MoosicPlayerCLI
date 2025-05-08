@@ -7,6 +7,6 @@
 7. utilize metadata and search.
 8. write metadata for a mp3
 9. add or remove a song to a playlist and folder
-10. waveform
+10. spectrum analyzer.
 11. go to a specific song.
 12. is it possible to combine with pre-existing tools for downloading videos from the web as wav/mp3.
