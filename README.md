@@ -1,3 +1,9 @@
+CLI tool so you can 'dj from your console'
+
+feature list
+load a directory as a playlist, playback, go to previous/next song, loop a song, volume up/down, render audio subtitles realtime from srt, shuffle playlist
+
+open items
 1. theres some type of bug with shuffle
 2. polish ui (synchronization issues)
 3. error logging (not just to console but also to dump file)
