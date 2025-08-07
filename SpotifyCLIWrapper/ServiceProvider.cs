@@ -24,6 +24,8 @@ public class ServiceProvider
         _services[typeof(IUserInterface)] = userInterface;
         Console.WriteLine($"Registered UI: {userInterface.GetType().Name}");
     
+            // Use simple Terminal.Gui interface by default, with fallback to console interface
+            _services[typeof(IUserInterface)] = new SimpleTerminalGuiUserInterface();
         }
 
         public T GetService<T>() where T : class

@@ -14,11 +14,18 @@ namespace Player.UI
         
         // UI Components
         private Toplevel _top = null!;
+        private MenuBar _menuBar = null!;
+        private Window _mainWindow = null!;
+        private Window _playlistWindow = null!;
+        private Window _statusWindow = null!;
         private Label _statusLabel = null!;
         private Label _trackInfoLabel = null!;
         private Label _timeLabel = null!;
+        private ProgressBar _progressBar = null!;
         private ListView _playlistView = null!;
         private Label _subtitleLabel = null!;
+        private Window _helpWindow = null!;
+        private bool _helpVisible = false;
         
         public async Task StartAsync(IMusicPlayer player)
         {
@@ -74,11 +81,107 @@ namespace Player.UI
         {
             _top = Application.Top;
             
-            // Create status panel
-            _statusLabel = new Label("⏸️ Stopped")
+            // Create menu bar
+            CreateMenuBar();
+            
+            // Create main windows
+            CreateStatusWindow();
+            CreatePlaylistWindow();
+            CreateMainWindow();
+            
+            // Add all components to top
+            _top.Add(_menuBar, _statusWindow, _playlistWindow, _mainWindow);
+
+            // Create help window (initially hidden)
+            CreateHelpWindow();
+
+            // Set up key bindings
+            SetupKeyBindings();
+        }
+
+        private void CreateHelpWindow()
+        {
+            _helpWindow = new Window("Help - Keyboard Shortcuts")
+            {
+                X = Pos.Center(),
+                Y = Pos.Center(),
+                Width = 50,
+                Height = 16,
+                Visible = false
+            };
+
+            var helpText = new Label(@"
+ PLAYBACK CONTROLS:
+ ─────────────────
+ Space       Toggle Play/Pause
+ →           Next Track
+ ←           Previous Track
+ ↑           Increase Volume
+ ↓           Decrease Volume
+
+ PLAYLIST CONTROLS:
+ ─────────────────
+ L           Load Directory
+ R           Toggle Loop Current Track
+ S           Shuffle Playlist
+ Enter       Play Selected Track
+
+ OTHER:
+ ─────
+ H           Toggle This Help
+ Q/Esc       Quit
+
+ Press H again to close this help.")
             {
                 X = 1,
                 Y = 1,
+                Width = Dim.Fill() - 2,
+                Height = Dim.Fill() - 2
+            };
+
+            _helpWindow.Add(helpText);
+            _top.Add(_helpWindow);
+        }
+
+        private void CreateMenuBar()
+        {
+            _menuBar = new MenuBar(new MenuBarItem[] {
+                new MenuBarItem("_File", new MenuItem[] {
+                    new MenuItem("_Load Directory", "Load music directory", () => LoadDirectoryAction()),
+                    new MenuItem("_Quit", "Exit application", () => QuitAction())
+                }),
+                new MenuBarItem("_Playback", new MenuItem[] {
+                    new MenuItem("_Play/Pause", "Toggle playback", () => _player.TogglePlayPause()),
+                    new MenuItem("_Next Track", "Skip to next track", () => _player.NextTrack()),
+                    new MenuItem("_Previous Track", "Go to previous track", () => _player.PreviousTrack()),
+                    new MenuItem("_Loop Current", "Toggle loop current track", () => _player.LoopCurrentTrack()),
+                    new MenuItem("_Shuffle", "Shuffle playlist", () => _player.ShufflePlaylist())
+                }),
+                new MenuBarItem("_Volume", new MenuItem[] {
+                    new MenuItem("_Increase", "Increase volume", () => _player.IncreaseVolume()),
+                    new MenuItem("_Decrease", "Decrease volume", () => _player.DecreaseVolume())
+                }),
+                new MenuBarItem("_Help", new MenuItem[] {
+                    new MenuItem("_Keyboard Shortcuts", "Show keyboard shortcuts", () => ToggleHelp()),
+                    new MenuItem("_About", "About this application", () => ShowAbout())
+                })
+            });
+        }
+
+        private void CreateStatusWindow()
+        {
+            _statusWindow = new Window("Status")
+            {
+                X = 0,
+                Y = 1, // Below menu bar
+                Width = Dim.Fill(),
+                Height = 6
+            };
+
+            _statusLabel = new Label("⏸️ Stopped")
+            {
+                X = 1,
+                Y = 0,
                 Width = Dim.Fill() - 2,
                 Height = 1
             };
@@ -86,12 +189,20 @@ namespace Player.UI
             _trackInfoLabel = new Label("No track loaded")
             {
                 X = 1,
+                Y = 1,
+                Width = Dim.Fill() - 2,
+                Height = 1
+            };
+
+            _timeLabel = new Label("00:00 / 00:00 | Press F1 for help")
+            {
+                X = 1,
                 Y = 2,
                 Width = Dim.Fill() - 2,
                 Height = 1
             };
 
-            _timeLabel = new Label("00:00 / 00:00")
+            _progressBar = new ProgressBar()
             {
                 X = 1,
                 Y = 3,
@@ -99,31 +210,51 @@ namespace Player.UI
                 Height = 1
             };
 
-            // Create playlist view
+            _statusWindow.Add(_statusLabel, _trackInfoLabel, _timeLabel, _progressBar);
+        }
+
+        private void CreatePlaylistWindow()
+        {
+            _playlistWindow = new Window("Playlist")
+            {
+                X = 0,
+                Y = 7, // Below status window
+                Width = Dim.Fill(),
+                Height = Dim.Fill() - 10 // Leave space for main window
+            };
+
             _playlistView = new ListView()
             {
-                X = 1,
-                Y = 5,
-                Width = Dim.Fill() - 2,
-                Height = Dim.Fill() - 8
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill()
             };
 
             _playlistView.OpenSelectedItem += OnPlaylistItemSelected;
+            _playlistWindow.Add(_playlistView);
+        }
 
-            // Create subtitle area
+        private void CreateMainWindow()
+        {
+            _mainWindow = new Window("Subtitles")
+            {
+                X = 0,
+                Y = Pos.AnchorEnd(3),
+                Width = Dim.Fill(),
+                Height = 3
+            };
+
             _subtitleLabel = new Label("")
             {
                 X = 1,
-                Y = Pos.AnchorEnd(2),
+                Y = 0,
                 Width = Dim.Fill() - 2,
-                Height = 1
+                Height = 1,
+                TextAlignment = TextAlignment.Centered
             };
 
-            // Add components
-            _top.Add(_statusLabel, _trackInfoLabel, _timeLabel, _playlistView, _subtitleLabel);
-
-            // Set up key bindings
-            SetupKeyBindings();
+            _mainWindow.Add(_subtitleLabel);
         }
 
         private void SetupKeyBindings()
@@ -167,7 +298,23 @@ namespace Player.UI
                         _player.ShufflePlaylist();
                         args.Handled = true;
                         break;
+                    case (Key)'h':
+                    case (Key)'H':
+                        ToggleHelp();
+                        args.Handled = true;
+                        break;
                     case Key.Esc:
+                        if (_helpVisible)
+                        {
+                            ToggleHelp();
+                            args.Handled = true;
+                        }
+                        else
+                        {
+                            QuitAction();
+                            args.Handled = true;
+                        }
+                        break;
                     case (Key)'q':
                     case (Key)'Q':
                         QuitAction();
@@ -190,6 +337,7 @@ namespace Player.UI
                         UpdateStatus();
                         UpdateTrackInfo();
                         UpdateTimeDisplay();
+                        UpdateProgressBar();
                         UpdateSubtitles();
                         UpdatePlaylistHighlight();
                     });
@@ -252,7 +400,20 @@ namespace Player.UI
             }
             else
             {
-                _timeLabel.Text = "00:00 / 00:00 | Press 'L' to load directory, 'Q' to quit";
+                _timeLabel.Text = "00:00 / 00:00 | Press 'H' for help, 'L' to load directory, 'Q' to quit";
+            }
+        }
+
+        private void UpdateProgressBar()
+        {
+            if (_player.CurrentTrack != null && _player.TotalDuration.TotalSeconds > 0)
+            {
+                var progress = (float)(_player.CurrentPosition.TotalSeconds / _player.TotalDuration.TotalSeconds);
+                _progressBar.Fraction = Math.Max(0, Math.Min(1, progress));
+            }
+            else
+            {
+                _progressBar.Fraction = 0;
             }
         }
 
@@ -367,6 +528,22 @@ namespace Player.UI
         {
             _isRunning = false;
             Application.RequestStop();
+        }
+
+        private void ToggleHelp()
+        {
+            _helpVisible = !_helpVisible;
+            _helpWindow.Visible = _helpVisible;
+            
+            if (_helpVisible)
+            {
+                _helpWindow.SetFocus();
+            }
+        }
+
+        private void ShowAbout()
+        {
+            MessageBox.Query("About box here...", "OK");
         }
     }
 }
