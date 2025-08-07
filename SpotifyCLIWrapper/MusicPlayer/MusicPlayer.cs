@@ -13,9 +13,9 @@ public class MusicPlayer : IMusicPlayer
     public bool IsLoopingCurrentTrack => _isLoopingCurrentTrack;
     public bool IsShuffling => _playlist.IsShuffling;
     public float Volume => _audioPlayer.Volume;
-    public Subtitle CurrentSubtitle => _currentSubtitle;
+    public Subtitle? CurrentSubtitle => _currentSubtitle;
 
-    private Timer _subtitleTimer;
+    private Timer? _subtitleTimer;
     private Subtitle? _currentSubtitle;
 
     public MusicPlayer(
@@ -61,6 +61,14 @@ public class MusicPlayer : IMusicPlayer
                 StopSubtitleTracking();
                 _currentSubtitle = null;
             }
+        }
+    }
+
+    public void PlayTrackAtIndex(int index)
+    {
+        if (_playlist.MoveToIndex(index))
+        {
+            PlayCurrentTrack();
         }
     }
 
@@ -140,7 +148,7 @@ public class MusicPlayer : IMusicPlayer
         }
     }
 
-    private void UpdateCurrentSubtitle(object state)
+    private void UpdateCurrentSubtitle(object? state)
     {
         if (CurrentTrack?.HasSubtitles == true && IsPlaying)
         {

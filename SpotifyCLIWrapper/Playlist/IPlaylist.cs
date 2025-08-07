@@ -7,6 +7,7 @@ public interface IPlaylist
     void LoadFiles(IEnumerable<AudioFile> files);
     bool MoveNext();
     bool MovePrevious();
+    bool MoveToIndex(int index);
     void Reset();
     bool IsShuffling { get; }
     void ToggleShuffle();

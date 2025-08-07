@@ -16,6 +16,7 @@ namespace ConsoleMediaPlayer
             var player = serviceProvider.GetService<IMusicPlayer>();
             var userInterface = serviceProvider.GetService<IUserInterface>();
             
+            Console.WriteLine($"Using UI: {userInterface.GetType().Name}");
             await userInterface.StartAsync(player);
         }
     }

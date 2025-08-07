@@ -8,9 +8,10 @@ public interface IMusicPlayer : IDisposable
     bool IsLoopingCurrentTrack { get; }
     bool IsShuffling { get; }
     float Volume { get; }
-    Subtitle CurrentSubtitle { get; }
+    Subtitle? CurrentSubtitle { get; }
     Task LoadPlaylistFromDirectoryAsync(string directoryPath);
     void PlayCurrentTrack();
+    void PlayTrackAtIndex(int index);
     void TogglePlayPause();
     void NextTrack();
     void PreviousTrack();

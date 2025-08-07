@@ -69,6 +69,38 @@ public class Playlist : IPlaylist
         return true;
     }
 
+    public bool MoveToIndex(int index)
+    {
+        if (index < 0 || index >= _tracklist.Count)
+            return false;
+
+        // Add current track to history if we have one
+        if (_currentIndex.HasValue)
+        {
+            _historyIndices.Push(_currentIndex.Value);
+        }
+
+        // Set new current index
+        _currentIndex = index;
+        
+        // Add to played indices
+        _playedIndices.Add(index);
+
+        // Remove from future indices if it exists there
+        var tempQueue = new Queue<int>();
+        while (_futureIndices.Count > 0)
+        {
+            var item = _futureIndices.Dequeue();
+            if (item != index)
+            {
+                tempQueue.Enqueue(item);
+            }
+        }
+        _futureIndices = tempQueue;
+
+        return true;
+    }
+
     public void ToggleShuffle()
     {
         _isShuffling = !_isShuffling;

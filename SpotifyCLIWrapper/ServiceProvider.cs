@@ -1,24 +1,29 @@
 using ConsoleMediaPlayer;
+using Player.UI;
 
 public class ServiceProvider
     {
         private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
 
-        public ServiceProvider()
-        {
-            // Register services
-            _services[typeof(IFileSystem)] = new FileSystem();
-            _services[typeof(ISubtitleParser)] = new SrtSubtitleParser(GetService<IFileSystem>());
-            _services[typeof(IAudioFileScanner)] = new AudioFileScanner(
-                GetService<IFileSystem>(), 
-                GetService<ISubtitleParser>());
-            _services[typeof(IAudioPlayer)] = new NAudioPlayer();
-            _services[typeof(IPlaylist)] = new Playlist();
-            _services[typeof(IMusicPlayer)] = new MusicPlayer(
-                GetService<IAudioFileScanner>(),
-                GetService<IAudioPlayer>(),
-                GetService<IPlaylist>());
-            _services[typeof(IUserInterface)] = new ConsoleUserInterface();
+    public ServiceProvider()
+    {
+        // Register services
+        _services[typeof(IFileSystem)] = new FileSystem();
+        _services[typeof(ISubtitleParser)] = new SrtSubtitleParser(GetService<IFileSystem>());
+        _services[typeof(IAudioFileScanner)] = new AudioFileScanner(
+            GetService<IFileSystem>(),
+            GetService<ISubtitleParser>());
+        _services[typeof(IAudioPlayer)] = new NAudioPlayer();
+        _services[typeof(IPlaylist)] = new Playlist();
+        _services[typeof(IMusicPlayer)] = new MusicPlayer(
+            GetService<IAudioFileScanner>(),
+            GetService<IAudioPlayer>(),
+            GetService<IPlaylist>());
+// Use simple Terminal.Gui interface by default, with fallback to console interface
+        var userInterface = new SimpleTerminalGuiUserInterface();
+        _services[typeof(IUserInterface)] = userInterface;
+        Console.WriteLine($"Registered UI: {userInterface.GetType().Name}");
+    
         }
 
         public T GetService<T>() where T : class
